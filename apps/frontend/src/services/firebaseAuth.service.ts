@@ -5,10 +5,20 @@ import {
     sendPasswordResetEmail,
     updateProfile,
     onAuthStateChanged as firebaseOnAuthStateChanged,
+    setPersistence,
+    browserLocalPersistence,
     type User as FirebaseUser,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase.config";
 import { setDocument, getDocument } from "@/services/firestore.service";
+
+/**
+ * Configure Firebase Auth persistence to maintain login state
+ * This ensures users stay logged in after page reload
+ */
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+    console.error("Failed to set auth persistence:", error);
+});
 
 /**
  * Firebase Authentication Service
@@ -107,15 +117,23 @@ export async function resetPassword(email: string): Promise<{ message: string }>
 /**
  * Get current authenticated user
  * Replaces: GET /auth/profile
+ * Waits for Firebase to restore auth state from persistent storage
  */
 export async function getCurrentUser(): Promise<User | null> {
-    const currentUser = auth.currentUser;
-    if (!currentUser) return null;
+    return new Promise((resolve) => {
+        const unsubscribe = firebaseOnAuthStateChanged(auth, async (firebaseUser) => {
+            unsubscribe(); // Unsubscribe after first callback
 
-    // Try to get additional user data from Firestore
-    const userDoc = await getDocument<User>("users", currentUser.uid);
+            if (!firebaseUser) {
+                resolve(null);
+                return;
+            }
 
-    return mapFirebaseUser(currentUser, userDoc?.name);
+            // Try to get additional user data from Firestore
+            const userDoc = await getDocument<User>("users", firebaseUser.uid);
+            resolve(mapFirebaseUser(firebaseUser, userDoc?.name));
+        });
+    });
 }
 
 /**
