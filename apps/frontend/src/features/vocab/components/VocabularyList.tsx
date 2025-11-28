@@ -4,6 +4,8 @@ import { VocabCard } from "./VocabCard";
 import { VocabCardSkeleton } from "./VocabCardSkeleton";
 import { toggleSuspendVocab } from "../services/vocab.service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/app/store";
 
 interface VocabularyListProps {
   vocabs: Vocab[];
@@ -14,8 +16,13 @@ interface VocabularyListProps {
 export const VocabularyList = React.memo<VocabularyListProps>(
   ({ vocabs, isLoading = false, isEmpty = false }) => {
     const queryClient = useQueryClient();
+    const user = useSelector((state: RootState) => state.auth.user);
+
     const toggleSuspendMutation = useMutation({
-      mutationFn: (id: number) => toggleSuspendVocab(id),
+      mutationFn: (id: string) => {
+        if (!user?.uid) throw new Error("User not authenticated");
+        return toggleSuspendVocab(user.uid, id);
+      },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["vocabs"] });
       },

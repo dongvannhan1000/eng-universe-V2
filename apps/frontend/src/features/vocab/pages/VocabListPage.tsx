@@ -114,6 +114,7 @@ export const VocabListPage: React.FC = () => {
   const isEmpty = data && data.data.length === 0;
 
   if (error) {
+    console.error("Vocab load error:", error);
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
@@ -134,9 +135,14 @@ export const VocabListPage: React.FC = () => {
               </svg>
             </div>
             <h3 className="text-lg font-medium text-foreground mb-2">Something went wrong</h3>
-            <p className="text-muted-foreground">
-              Failed to load vocabularies. Please try again later.
+            <p className="text-muted-foreground mb-4">
+              {error instanceof Error ? error.message : "Failed to load vocabularies."}
             </p>
+            <div className="max-w-lg mx-auto p-4 bg-muted rounded text-left overflow-auto">
+              <code className="text-xs break-all">
+                {JSON.stringify(error, null, 2)}
+              </code>
+            </div>
           </div>
         </div>
       </div>

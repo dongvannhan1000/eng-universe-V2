@@ -26,9 +26,13 @@ interface EditVocabDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+import { useSelector } from "react-redux";
+import type { RootState } from "@/app/store";
+
 export function EditVocabDialog({ vocab, open, onOpenChange }: EditVocabDialogProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const queryClient = useQueryClient();
+  const user = useSelector((state: RootState) => state.auth.user);
 
   const [formData, setFormData] = useState<CreateVocabInput>({
     word: vocab.word,
@@ -57,7 +61,10 @@ export function EditVocabDialog({ vocab, open, onOpenChange }: EditVocabDialogPr
   }, [open, vocab]);
 
   const mutation = useMutation({
-    mutationFn: (data: CreateVocabInput) => updateVocab(vocab.id, data),
+    mutationFn: (data: CreateVocabInput) => {
+      if (!user?.uid) throw new Error("User not authenticated");
+      return updateVocab(user.uid, vocab.id, data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["vocabs"] });
       onOpenChange(false);

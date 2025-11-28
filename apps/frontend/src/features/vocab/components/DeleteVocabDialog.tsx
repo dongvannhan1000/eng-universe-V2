@@ -19,11 +19,18 @@ interface DeleteVocabDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+import { useSelector } from "react-redux";
+import type { RootState } from "@/app/store";
+
 export function DeleteVocabDialog({ vocab, open, onOpenChange }: DeleteVocabDialogProps) {
   const queryClient = useQueryClient();
+  const user = useSelector((state: RootState) => state.auth.user);
 
   const mutation = useMutation({
-    mutationFn: (id: number) => deleteVocab(id),
+    mutationFn: (id: string) => {
+      if (!user?.uid) throw new Error("User not authenticated");
+      return deleteVocab(user.uid, id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["vocabs"] });
       onOpenChange(false);

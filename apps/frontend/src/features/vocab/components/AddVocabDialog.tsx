@@ -23,11 +23,14 @@ import { useSelector } from "react-redux";
 import { selectCaptureMode } from "../slices/captureModeSlice";
 import type { CreateVocabInput } from "../types";
 
+import type { RootState } from "@/app/store";
+
 export function AddVocabDialog() {
   const [open, setOpen] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const queryClient = useQueryClient();
   const captureMode = useSelector(selectCaptureMode);
+  const user = useSelector((state: RootState) => state.auth.user);
 
   const [formData, setFormData] = useState<CreateVocabInput>({
     word: "",
@@ -52,7 +55,10 @@ export function AddVocabDialog() {
   }, [open, captureMode.enabled, captureMode.defaultTags]);
 
   const mutation = useMutation({
-    mutationFn: createVocab,
+    mutationFn: (data: CreateVocabInput) => {
+      if (!user?.uid) throw new Error("User not authenticated");
+      return createVocab(user.uid, data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["vocabs"] });
       setOpen(false);

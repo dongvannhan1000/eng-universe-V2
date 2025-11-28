@@ -91,7 +91,7 @@ export async function listVocabs(
     }
 
     // Filter by tags
-    if (tags && tags.length > 0) {
+    if (tags && Array.isArray(tags) && tags.length > 0) {
         constraints.push(where("tags", "array-contains-any", tags.slice(0, 10)));
     }
 

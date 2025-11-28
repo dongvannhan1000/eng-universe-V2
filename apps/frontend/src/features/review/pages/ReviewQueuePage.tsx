@@ -16,7 +16,7 @@ import { motion } from "framer-motion";
 
 export function ReviewQueuePage() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [completedCards, setCompletedCards] = useState<number[]>([]);
+  const [completedCards, setCompletedCards] = useState<string[]>([]);
   const [sessionStartTime] = useState(() => Date.now());
   const [queueParams] = useState({ take: 50 });
   const [initialTotalCards, setInitialTotalCards] = useState<number | null>(null);
@@ -72,12 +72,20 @@ export function ReviewQueuePage() {
   }
 
   if (error) {
+    console.error("Review load error:", error);
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 max-w-2xl mx-auto">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>Failed to load review queue. Please try again.</AlertDescription>
+          <AlertDescription>
+            {error instanceof Error ? error.message : "Failed to load review queue."}
+          </AlertDescription>
         </Alert>
+        <div className="w-full p-4 bg-muted rounded text-left overflow-auto">
+          <code className="text-xs break-all">
+            {JSON.stringify(error, null, 2)}
+          </code>
+        </div>
         <Button onClick={() => refetch()}>Retry</Button>
       </div>
     );
