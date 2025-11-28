@@ -18,7 +18,7 @@ interface LoginFormProps {
 export function LoginForm({ onSuccess }: LoginFormProps) {
   const dispatch = useDispatch<AppDispatch>();
   const { isLoading, error } = useSelector((state: RootState) => state.auth);
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,7 +26,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     dispatch(clearError());
 
     try {
-      await dispatch(loginUser({ username, password })).unwrap();
+      await dispatch(loginUser({ email, password })).unwrap();
       onSuccess();
     } catch (err) {
       // Error is handled by Redux
@@ -42,13 +42,13 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="login-username">Username</Label>
+        <Label htmlFor="login-email">Email</Label>
         <Input
-          id="login-username"
-          type="text"
+          id="login-email"
+          type="email"
           placeholder="you@example.com"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
           disabled={isLoading}
         />

@@ -18,7 +18,7 @@ interface RegisterFormProps {
 export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
   const dispatch = useDispatch<AppDispatch>();
   const { isLoading, error } = useSelector((state: RootState) => state.auth);
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
@@ -40,7 +40,7 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     }
 
     try {
-      await dispatch(registerUser({ username, password, name: name || undefined })).unwrap();
+      await dispatch(registerUser({ email, password, name: name || undefined })).unwrap();
       // Show success and switch to login
       setValidationError("");
       alert("Registration successful! Please login with your credentials.");
@@ -74,13 +74,13 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="register-username">Username</Label>
+        <Label htmlFor="register-email">Email</Label>
         <Input
-          id="register-username"
-          type="text"
+          id="register-email"
+          type="email"
           placeholder="you@example.com"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
           disabled={isLoading}
         />
