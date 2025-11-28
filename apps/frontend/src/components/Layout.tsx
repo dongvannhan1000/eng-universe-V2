@@ -13,7 +13,7 @@ import vocabLogo from "../../assets/learning_lab_1.jpg";
 import { openAuthDialog, closeAuthDialog } from "@/features/auth/slices/authDialogSlice";
 
 // (Optional) nếu có lucide-react:
-import { Telescope, Sparkles, Rocket } from "lucide-react";
+import { Sparkles, Rocket } from "lucide-react";
 import FeedbackWidget from "./FeedbackWidget";
 
 export const Layout: React.FC = () => {
@@ -47,7 +47,7 @@ export const Layout: React.FC = () => {
             {/* Brand + Tagline */}
             <div className="flex items-center gap-8">
               <Link
-                to="/decks"
+                to="/vocabs"
                 className="flex items-center gap-3 group transition-all"
                 aria-label="EngUniverse home"
                 title="EngUniverse — Chart your English galaxy"
@@ -68,20 +68,8 @@ export const Layout: React.FC = () => {
               </Link>
 
               {/* Primary Nav */}
-              {/* {isAuthenticated && ( */}
               <div className="hidden md:flex gap-1">
-                <NavLink
-                  to="/decks"
-                  className={({ isActive }) =>
-                    `${navLinkBase} ${isActive ? navLinkActive : navLinkIdle}`
-                  }
-                  aria-label="Word Observatory — Scan the sky for new words"
-                  title="Word Observatory — Scan the sky for new words"
-                  end={false}
-                >
-                  <Telescope className="mr-2 h-4 w-4" />
-                  Word Observatory
-                </NavLink>
+                {/* Word Observatory link hidden - decks feature disabled */}
 
                 <NavLink
                   to="/vocabs"
@@ -107,7 +95,6 @@ export const Layout: React.FC = () => {
                   Training Mission
                 </NavLink>
               </div>
-              {/* )} */}
             </div>
 
             {/* Auth / User */}
@@ -130,16 +117,14 @@ export const Layout: React.FC = () => {
       </nav>
 
       {/* Optional sub-header for page-level context (can hide on small screens) */}
-      {/* {isAuthenticated && ( */}
       <div className="border-b border-border bg-background/60">
         <div className="container mx-auto px-4 py-2 text-xs sm:text-sm text-muted-foreground">
-          <span className="align-middle">🚀 Ready for today’s Training Mission? </span>
+          <span className="align-middle">🚀 Ready for today's Training Mission? </span>
           <Link to="/review" className="ml-2 underline underline-offset-4 hover:text-foreground">
             Start now
           </Link>
         </div>
       </div>
-      {/* )} */}
 
       {/* Main */}
       <main id="main" className="container mx-auto px-4 py-6">
