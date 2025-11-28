@@ -22,7 +22,7 @@ export interface Vocab {
 export interface CreateVocabInput {
   word: string;
   meaningVi: string;
-  tags?: string[]; // Made optional
+  tags: string[]; // Required, not optional
   explanationEn?: string;
   notes?: string;
 }

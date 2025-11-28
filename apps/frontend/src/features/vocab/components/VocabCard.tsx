@@ -39,10 +39,9 @@ export const VocabCard = React.memo<VocabCardProps>(({ vocab, onSuspend }) => {
       <div
         className={`
           bg-card border rounded-lg p-4 transition-all duration-200
-          ${
-            vocab.isSuspended
-              ? "border-muted bg-muted/30 opacity-60 hover:opacity-80"
-              : "border-border hover:shadow-md hover:border-primary/20"
+          ${vocab.isSuspended
+            ? "border-muted bg-muted/30 opacity-60 hover:opacity-80"
+            : "border-border hover:shadow-md hover:border-primary/20"
           }
         `}
       >
@@ -63,10 +62,10 @@ export const VocabCard = React.memo<VocabCardProps>(({ vocab, onSuspend }) => {
             <div className="flex items-center gap-2 flex-shrink-0">
               <time
                 className="text-xs text-muted-foreground"
-                dateTime={vocab.addedAt}
+                dateTime={vocab.addedAt.toISOString()}
                 title={new Date(vocab.addedAt).toLocaleString()}
               >
-                {formatDistanceToNow(vocab.addedAt)}
+                {formatDistanceToNow(vocab.addedAt.toISOString())}
               </time>
 
               <DropdownMenu>

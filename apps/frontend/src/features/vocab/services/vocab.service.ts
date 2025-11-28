@@ -3,7 +3,6 @@ import {
     query,
     where,
     orderBy,
-    limit as firestoreLimit,
     getDocs,
     doc,
     getDoc,
