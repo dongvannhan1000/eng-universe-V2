@@ -1,0 +1,52 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user owns the resource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // User's vocabulary collection
+    // Path: /users/{userId}/vocabs/{vocabId}
+    match /users/{userId}/vocabs/{vocabId} {
+      // Only the owner can read and write their own vocabs
+      allow read, write: if isOwner(userId);
+      
+      // Vocabulary reviews subcollection
+      match /reviews/{reviewId} {
+        // Only the owner can read and write their own reviews
+        allow read, write: if isOwner(userId);
+      }
+    }
+    
+    // Public decks collection (read-only for users)
+    // Path: /publicDecks/{deckId}
+    match /publicDecks/{deckId} {
+      // Anyone can read public decks
+      allow read: if true;
+      // Only admins can write (manual via Firebase Console or Cloud Functions)
+      allow write: if false;
+      
+      // Public deck items subcollection
+      match /items/{itemId} {
+        // Anyone can read deck items
+        allow read: if true;
+        // Only admins can write
+        allow write: if false;
+      }
+    }
+    
+    // Optional: User profiles (if needed for additional user data beyond Firebase Auth)
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+  }
+}

@@ -8,17 +8,14 @@
   "main": "index.js",
   "scripts": {
     "test": "turbo test",
-    "dev": "turbo dev",
+    "dev": "turbo dev --filter=frontend",
     "dev:frontend": "turbo dev --filter=frontend",
-    "dev:backend": "turbo dev --filter=backend",
-    "build": "turbo build",
+    "build": "turbo build --filter=frontend",
     "build:frontend": "turbo build --filter=frontend",
-    "build:backend": "turbo build --filter=backend",
     "build:types": "turbo build --filter=types",
     "lint": "turbo lint",
     "clean": "turbo clean && rimraf node_modules",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,md,json}\"",
-    "prepare": "is-ci || husky"
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,md,json}\""
   },
   "private": true,
   "packageManager": "npm@10.0.0",

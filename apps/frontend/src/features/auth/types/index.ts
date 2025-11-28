@@ -1,23 +1,23 @@
 export interface User {
-  id: number;
-  username: string;
+  uid: string; // Firebase uses uid instead of id
+  email: string; // Firebase uses email instead of username
   name?: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 export interface LoginRequest {
-  username: string;
+  email: string; // Changed from username to email
   password: string;
 }
 
 export interface RegisterRequest {
-  username: string;
+  email: string; // Changed from username to email
   password: string;
   name?: string;
 }
 
 export interface ForgotPasswordRequest {
-  username: string;
+  email: string; // Changed from username to email
 }
 
 export interface AuthResponse {

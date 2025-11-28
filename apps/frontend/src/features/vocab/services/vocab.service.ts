@@ -1,54 +1,241 @@
-import { http } from "@/lib/http";
-import { PaginatedVocabSchema } from "types";
-import type { PaginatedVocab } from "../types";
-import type { CreateVocabInput } from "../types";
-import type { Vocab } from "../types";
+import {
+    collection,
+    query,
+    where,
+    orderBy,
+    limit as firestoreLimit,
+    getDocs,
+    doc,
+    getDoc,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    Timestamp,
+    type QueryConstraint,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase.config";
 
-export type ListVocabParams = {
-  q?: string;
-  tags?: string[];
-  from?: string | null; // ISO
-  to?: string | null; // ISO
-  page?: number; // 1-based
-  limit?: number;
-  includeSuspended?: boolean; // default false
-};
+/**
+ * Vocabulary Firebase Service
+ * Replaces the HTTP-based vocab service with Firestore
+ */
 
-export async function listVocabs(params: ListVocabParams): Promise<PaginatedVocab> {
-  // Chuẩn hoá query: loại bỏ param default/empty
-  const search = new URLSearchParams();
-  if (params.q) search.set("q", params.q);
-  if (params.tags && params.tags.length) search.set("tags", params.tags.join(","));
-  if (params.from) search.set("from", params.from);
-  if (params.to) search.set("to", params.to);
-  if (params.page && params.page > 1) search.set("page", String(params.page));
-  if (params.limit && params.limit !== 20) search.set("limit", String(params.limit));
-  if (params.includeSuspended) search.set("includeSuspended", "true");
-  const res = await http.get(`/vocab?${search.toString()}`);
-  const parsed = PaginatedVocabSchema.safeParse(res.data);
-  if (!parsed.success) {
-    if (import.meta.env.DEV) {
-      console.error("Vocab DTO mismatch:", parsed.error.flatten());
+export interface Vocab {
+    id: string;
+    userId: string;
+    word: string;
+    meaningVi: string;
+    explanationEn?: string;
+    notes?: string;
+    tags: string[];
+    addedAt: Date;
+    lastReviewedAt?: Date;
+    isSuspended: boolean;
+    dueAt: Date;
+    intervalDays: number;
+    ease: number;
+    repetitions: number;
+    lapses: number;
+    lastResult?: "AGAIN" | "HARD" | "GOOD" | "EASY";
+}
+
+export interface CreateVocabInput {
+    word: string;
+    meaningVi: string;
+    explanationEn?: string;
+    notes?: string;
+    tags?: string[];
+}
+
+export interface ListVocabParams {
+    q?: string;
+    tags?: string[];
+    from?: string | null;
+    to?: string | null;
+    page?: number;
+    limit?: number;
+    includeSuspended?: boolean;
+}
+
+export interface PaginatedVocab {
+    data: Vocab[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
+/**
+ * List vocabs with filters and pagination
+ */
+export async function listVocabs(
+    userId: string,
+    params: ListVocabParams = {},
+): Promise<PaginatedVocab> {
+    const {
+        q,
+        tags,
+        from,
+        to,
+        page = 1,
+        limit = 20,
+        includeSuspended = false,
+    } = params;
+
+    const vocabsRef = collection(db, "users", userId, "vocabs");
+    const constraints: QueryConstraint[] = [];
+
+    // Filter by suspended status
+    if (!includeSuspended) {
+        constraints.push(where("isSuspended", "==", false));
     }
-    throw new Error("Invalid response from server");
-  }
-  return parsed.data;
+
+    // Filter by tags
+    if (tags && tags.length > 0) {
+        constraints.push(where("tags", "array-contains-any", tags.slice(0, 10)));
+    }
+
+    // Filter by date range
+    if (from) {
+        constraints.push(where("addedAt", ">=", Timestamp.fromDate(new Date(from))));
+    }
+    if (to) {
+        constraints.push(where("addedAt", "<=", Timestamp.fromDate(new Date(to))));
+    }
+
+    // Order by addedAt descending
+    constraints.push(orderBy("addedAt", "desc"));
+
+    // Build query
+    const q1 = query(vocabsRef, ...constraints);
+    const snapshot = await getDocs(q1);
+
+    // Get all docs and manually filter by search query
+    let allVocabs = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        addedAt: doc.data().addedAt?.toDate(),
+        lastReviewedAt: doc.data().lastReviewedAt?.toDate(),
+        dueAt: doc.data().dueAt?.toDate(),
+    })) as Vocab[];
+
+    // Client-side text search
+    if (q) {
+        const searchLower = q.toLowerCase();
+        allVocabs = allVocabs.filter(
+            (v) =>
+                v.word.toLowerCase().includes(searchLower) ||
+                v.meaningVi.toLowerCase().includes(searchLower) ||
+                v.explanationEn?.toLowerCase().includes(searchLower),
+        );
+    }
+
+    // Pagination
+    const total = allVocabs.length;
+    const totalPages = Math.ceil(total / limit);
+    const startIndex = (page - 1) * limit;
+    const data = allVocabs.slice(startIndex, startIndex + limit);
+
+    return {
+        data,
+        total,
+        page,
+        limit,
+        totalPages,
+    };
 }
 
-export async function createVocab(data: CreateVocabInput): Promise<Vocab> {
-  const res = await http.post("/vocab", data);
-  return res.data;
+/**
+ * Create a new vocab
+ */
+export async function createVocab(
+    userId: string,
+    data: CreateVocabInput,
+): Promise<Vocab> {
+    const vocabsRef = collection(db, "users", userId, "vocabs");
+
+    const now = Timestamp.now();
+    const vocabData = {
+        userId,
+        word: data.word,
+        meaningVi: data.meaningVi,
+        explanationEn: data.explanationEn || "",
+        notes: data.notes || "",
+        tags: data.tags || [],
+        addedAt: now,
+        isSuspended: false,
+        dueAt: now, // Due immediately for first review
+        intervalDays: 0,
+        ease: 250, // 2.5 * 100
+        repetitions: 0,
+        lapses: 0,
+    };
+
+    const docRef = await addDoc(vocabsRef, vocabData);
+    const docSnap = await getDoc(docRef);
+
+    return {
+        id: docRef.id,
+        ...docSnap.data(),
+        addedAt: docSnap.data()?.addedAt?.toDate(),
+        dueAt: docSnap.data()?.dueAt?.toDate(),
+    } as Vocab;
 }
 
-export async function updateVocab(id: number, data: CreateVocabInput): Promise<Vocab> {
-  const res = await http.patch(`/vocab/${id}`, data);
-  return res.data;
+/**
+ * Update a vocab
+ */
+export async function updateVocab(
+    userId: string,
+    vocabId: string,
+    data: CreateVocabInput,
+): Promise<Vocab> {
+    const vocabRef = doc(db, "users", userId, "vocabs", vocabId);
+
+    await updateDoc(vocabRef, {
+        word: data.word,
+        meaningVi: data.meaningVi,
+        explanationEn: data.explanationEn || "",
+        notes: data.notes || "",
+        tags: data.tags || [],
+    });
+
+    const docSnap = await getDoc(vocabRef);
+
+    return {
+        id: vocabId,
+        ...docSnap.data(),
+        addedAt: docSnap.data()?.addedAt?.toDate(),
+        lastReviewedAt: docSnap.data()?.lastReviewedAt?.toDate(),
+        dueAt: docSnap.data()?.dueAt?.toDate(),
+    } as Vocab;
 }
 
-export async function deleteVocab(id: number): Promise<void> {
-  await http.delete(`/vocab/${id}`);
+/**
+ * Delete a vocab
+ */
+export async function deleteVocab(
+    userId: string,
+    vocabId: string,
+): Promise<void> {
+    const vocabRef = doc(db, "users", userId, "vocabs", vocabId);
+    await deleteDoc(vocabRef);
 }
 
-export async function toggleSuspendVocab(id: number): Promise<void> {
-  await http.patch(`/vocab/toggle-suspend/${id}`);
+/**
+ * Toggle suspend status
+ */
+export async function toggleSuspendVocab(
+    userId: string,
+    vocabId: string,
+): Promise<void> {
+    const vocabRef = doc(db, "users", userId, "vocabs", vocabId);
+    const docSnap = await getDoc(vocabRef);
+
+    if (docSnap.exists()) {
+        const currentStatus = docSnap.data().isSuspended || false;
+        await updateDoc(vocabRef, {
+            isSuspended: !currentStatus,
+        });
+    }
 }

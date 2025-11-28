@@ -1,92 +1,145 @@
-// src/services/decks.ts
-import { http } from "@/lib/http";
-import type { DeckListParams, Deck, PaginatedDeckItem } from "../types";
+import {
+    collection,
+    query,
+    where,
+    orderBy,
+    limit as firestoreLimit,
+    getDocs,
+    doc,
+    getDoc,
+    type QueryConstraint,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase.config";
 
 /**
- * Params chuẩn hoá cho list decks (tên field giữ nguyên để khớp backend).
- * - q?: string
- * - tags?: string[]  -> gửi dạng "tag1,tag2"
- * - cefr?: string    -> A1|A2|B1|B2|C1|C2 (tuỳ backend)
- * - page?: number    -> chỉ gửi nếu > 1
- * - limit?: number   -> chỉ gửi nếu khác 20 (mặc định 20)
+ * Public Decks Firebase Service
+ * Replaces the HTTP-based decks service with Firestore
  */
-export type ListDecksParams = DeckListParams & {
-  page?: number;
-  limit?: number;
-};
 
-/** GET /decks */
-export async function listDecks(): Promise<Deck[]> {
-  const url = "/decks";
-
-  const res = await http.get(url);
-  if (res.status >= 400) {
-    throw new Error(`Failed to fetch decks: ${res.status} ${res.statusText}`);
-  }
-  return res.data as Deck[];
+export interface Deck {
+    id: string;
+    slug: string;
+    title: string;
+    description?: string | null;
+    tags: string[];
+    createdAt: Date;
+    updatedAt: Date;
 }
 
-/** GET /decks/:slug (slug hoặc id string – tuỳ route backend) */
-export async function getDeckBySlug(slug: string): Promise<Deck | null> {
-  const res = await http.get(`/decks/${encodeURIComponent(slug)}`, {
-    validateStatus: () => true, // để tự xử lý 404
-  });
-
-  if (res.status === 404) return null;
-  if (res.status >= 400) {
-    throw new Error(`Failed to fetch deck: ${res.status} ${res.statusText}`);
-  }
-  return res.data as Deck;
+export interface DeckItem {
+    id: string;
+    deckId: string;
+    headword: string;
+    pos?: string;
+    definition?: string;
+    tags: string[];
+    source?: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
-/** GET /decks/:id (numeric id) */
-export async function getDeckById(id: number): Promise<Deck | null> {
-  const res = await http.get(`/decks/${id}`, { validateStatus: () => true });
-
-  if (res.status === 404) return null;
-  if (res.status >= 400) {
-    throw new Error(`Failed to fetch deck: ${res.status} ${res.statusText}`);
-  }
-  return res.data as Deck;
-}
-
-/** GET /decks/:deckId/items?page=&limit= */
-export async function listDeckItems(
-  slug: string,
-  page = 1,
-  limit = 20,
-): Promise<PaginatedDeckItem> {
-  const sp = new URLSearchParams();
-  if (page > 1) sp.set("page", String(page));
-  if (limit !== 20) sp.set("limit", String(limit));
-
-  const qs = sp.toString();
-  const url = qs ? `/decks/${slug}/items?${qs}` : `/decks/${slug}/items`;
-
-  const res = await http.get(url);
-  if (res.status >= 400) {
-    throw new Error(`Failed to fetch deck items: ${res.status} ${res.statusText}`);
-  }
-  return res.data as PaginatedDeckItem;
-}
-
-export async function previewDeck(topic: string, page = 1, limit = 20, refresh = false) {
-  const res = await http.get("/decks/actions/preview", {
-    params: { topic, page, limit, refresh },
-  });
-  return res.data as {
-    deck: {
-      slug: string;
-      title: string;
-      description?: string | null;
-      tags: string[];
-      cefr?: string | null;
-      createdAt?: string | Date;
-      updatedAt?: string | Date;
-    };
-    items: any[];
+export interface PaginatedDeckItem {
+    data: DeckItem[];
     total: number;
     page: number;
     limit: number;
-  };
+}
+
+/**
+ * List all public decks
+ */
+export async function listDecks(): Promise<Deck[]> {
+    const decksRef = collection(db, "publicDecks");
+    const q = query(decksRef, orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+
+    return snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate(),
+    })) as Deck[];
+}
+
+/**
+ * Get deck by slug
+ */
+export async function getDeckBySlug(slug: string): Promise<Deck | null> {
+    const decksRef = collection(db, "publicDecks");
+    const q = query(decksRef, where("slug", "==", slug), firestoreLimit(1));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) return null;
+
+    const docData = snapshot.docs[0];
+    return {
+        id: docData.id,
+        ...docData.data(),
+        createdAt: docData.data().createdAt?.toDate(),
+        updatedAt: docData.data().updatedAt?.toDate(),
+    } as Deck;
+}
+
+/**
+ * Get deck by ID
+ */
+export async function getDeckById(id: string): Promise<Deck | null> {
+    const deckRef = doc(db, "publicDecks", id);
+    const docSnap = await getDoc(deckRef);
+
+    if (!docSnap.exists()) return null;
+
+    return {
+        id: docSnap.id,
+        ...docSnap.data(),
+        createdAt: docSnap.data().createdAt?.toDate(),
+        updatedAt: docSnap.data().updatedAt?.toDate(),
+    } as Deck;
+}
+
+/**
+ * List deck items with pagination
+ */
+export async function listDeckItems(
+    deckId: string,
+    page = 1,
+    limit = 20,
+): Promise<PaginatedDeckItem> {
+    const itemsRef = collection(db, "publicDecks", deckId, "items");
+    const q = query(itemsRef, orderBy("createdAt", "asc"));
+    const snapshot = await getDocs(q);
+
+    const allItems = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate(),
+    })) as DeckItem[];
+
+    // Pagination
+    const total = allItems.length;
+    const startIndex = (page - 1) * limit;
+    const data = allItems.slice(startIndex, startIndex + limit);
+
+    return {
+        data,
+        total,
+        page,
+        limit,
+    };
+}
+
+/**
+ * Preview deck - Note: This requires backend/Cloud Function for AI generation
+ * For now, return an error indicating this feature needs backend support
+ */
+export async function previewDeck(
+    topic: string,
+    page = 1,
+    limit = 20,
+    refresh = false,
+): Promise<any> {
+    throw new Error(
+        "Deck preview (AI generation) requires a backend Cloud Function. Please implement this using Firebase Cloud Functions.",
+    );
 }
