@@ -108,9 +108,10 @@ export const VocabListPage: React.FC = () => {
     dispatch(resetFilters());
   }, [dispatch]);
 
-  const currentPage = data ? data.skip / data.take + 1 : 1;
-  const totalPages = data ? Math.ceil(data.total / data.take) : 0;
-  const isEmpty = data && data.items.length === 0;
+  // Pagination - use new structure
+  const currentPage = data ? data.page : 1;
+  const totalPages = data ? data.totalPages : 0;
+  const isEmpty = data && data.data.length === 0;
 
   if (error) {
     return (
@@ -182,14 +183,14 @@ export const VocabListPage: React.FC = () => {
         {data && (
           <div className="mb-6">
             <p className="text-sm text-muted-foreground">
-              Showing <span className="font-medium">{data.items.length}</span> of{" "}
+              Showing <span className="font-medium">{data.data.length}</span> of{" "}
               <span className="font-medium">{data.total}</span> vocabularies
               {filters.page > 1 && ` (page ${filters.page})`}
             </p>
           </div>
         )}
 
-        <VocabularyList vocabs={data?.items || []} isLoading={isLoading} isEmpty={isEmpty} />
+        <VocabularyList vocabs={data?.data || []} isLoading={isLoading} isEmpty={isEmpty} />
 
         {data && totalPages > 1 && (
           <div className="mt-8">

@@ -13,7 +13,7 @@ interface ForgotPasswordFormProps {
 }
 
 export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -24,7 +24,7 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
     setIsLoading(true);
 
     try {
-      await forgotPassword({ username });
+      await forgotPassword({ email });
       setSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send reset email");
@@ -55,13 +55,13 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="forgot-username">Username</Label>
+        <Label htmlFor="forgot-email">Email</Label>
         <Input
-          id="forgot-username"
-          type="text"
+          id="forgot-email"
+          type="email"
           placeholder="you@example.com"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
           disabled={isLoading}
         />

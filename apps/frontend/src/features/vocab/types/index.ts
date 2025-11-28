@@ -1,35 +1,30 @@
 type ReviewResult = "AGAIN" | "HARD" | "GOOD" | "EASY";
 
 export interface Vocab {
-  id: number;
-  userId: number;
+  id: string; // Changed from number to string for Firestore
+  userId: string; // Changed from number to string
   word: string;
   meaningVi: string;
-  explanationEn: string | null;
-  notes: string | null;
+  explanationEn?: string; // Changed from string | null
+  notes?: string; // Changed from string | null
   tags: string[];
-  // timecodeSec: number | null;
-  // captureBatchId: number | null;
-  addedAt: string;
-  lastReviewedAt: string | null;
+  addedAt: Date; // Changed from string
+  lastReviewedAt?: Date; // Changed from string | null
   isSuspended: boolean;
-  dueAt: string;
+  dueAt: Date; // Changed from string
   intervalDays: number;
   ease: number;
   repetitions: number;
   lapses: number;
-  lastResult: ReviewResult | null;
-  // Relations
+  lastResult?: ReviewResult; // Changed from ReviewResult | null
 }
 
 export interface CreateVocabInput {
   word: string;
   meaningVi: string;
-  tags: string[];
+  tags?: string[]; // Made optional
   explanationEn?: string;
   notes?: string;
-  // timecodeSec?: number;
-  // captureBatchId?: string;
 }
 
 export interface VocabListParams {
@@ -39,11 +34,13 @@ export interface VocabListParams {
   to?: string | null;
   page?: number;
   limit?: number;
+  includeSuspended?: boolean; // Added for Firebase service
 }
 
 export interface PaginatedVocab {
+  data: Vocab[]; // Changed from items
   total: number;
-  skip: number;
-  take: number;
-  items: Vocab[];
+  page: number; // Changed from skip
+  limit: number; // Changed from take
+  totalPages: number; // Added
 }

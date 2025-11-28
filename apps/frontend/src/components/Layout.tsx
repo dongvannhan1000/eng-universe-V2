@@ -14,7 +14,6 @@ import { openAuthDialog, closeAuthDialog } from "@/features/auth/slices/authDial
 
 // (Optional) nếu có lucide-react:
 import { Telescope, Sparkles, Rocket } from "lucide-react";
-import { MysteryQuote } from "./MysteryQuote";
 import FeedbackWidget from "./FeedbackWidget";
 
 export const Layout: React.FC = () => {
@@ -110,7 +109,6 @@ export const Layout: React.FC = () => {
               </div>
               {/* )} */}
             </div>
-            <MysteryQuote />
 
             {/* Auth / User */}
             <div className="flex items-center gap-2">

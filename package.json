@@ -8,9 +8,9 @@
   "main": "index.js",
   "scripts": {
     "test": "turbo test",
-    "dev": "turbo dev --filter=frontend",
+    "dev": "turbo dev",
     "dev:frontend": "turbo dev --filter=frontend",
-    "build": "turbo build --filter=frontend",
+    "build": "turbo build",
     "build:frontend": "turbo build --filter=frontend",
     "build:types": "turbo build --filter=types",
     "lint": "turbo lint",

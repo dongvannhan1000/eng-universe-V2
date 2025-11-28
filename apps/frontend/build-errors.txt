@@ -1,0 +1,64 @@
+
+> frontend@0.0.0 build:tsc
+> tsc -b
+
+src/components/Layout.tsx(17,30): error TS2307: Cannot find module './MysteryQuote' or its corresponding type declarations.
+src/features/auth/components/ForgotPasswordForm.tsx(27,30): error TS2353: Object literal may only specify known properties, and 'username' does not exist in type 'ForgotPasswordRequest'.
+src/features/auth/components/LoginForm.tsx(29,34): error TS2353: Object literal may only specify known properties, and 'username' does not exist in type 'LoginRequest'.
+src/features/auth/components/RegisterForm.tsx(43,37): error TS2353: Object literal may only specify known properties, and 'username' does not exist in type 'RegisterRequest'.
+src/features/auth/components/UserMenu.tsx(40,71): error TS2339: Property 'username' does not exist on type 'User'.
+src/features/auth/components/UserMenu.tsx(47,73): error TS2339: Property 'username' does not exist on type 'User'.
+src/features/decks/pages/DeckDetailPage.tsx(74,51): error TS2339: Property 'items' does not exist on type 'PaginatedDeckItem | { items: any; total: any; limit: any; }'.
+  Property 'items' does not exist on type 'PaginatedDeckItem'.
+src/features/decks/pages/DeckDetailPage.tsx(196,46): error TS7006: Parameter 'tag' implicitly has an 'any' type.
+src/features/decks/pages/DeckDetailPage.tsx(212,71): error TS2339: Property 'items' does not exist on type 'PaginatedDeckItem | { items: any; total: any; limit: any; }'.
+  Property 'items' does not exist on type 'PaginatedDeckItem'.
+src/features/decks/pages/DeckDetailPage.tsx(220,36): error TS2339: Property 'items' does not exist on type 'PaginatedDeckItem | { items: any; total: any; limit: any; }'.
+  Property 'items' does not exist on type 'PaginatedDeckItem'.
+src/features/decks/services/deck.service.ts(10,10): error TS6133: 'QueryConstraint' is declared but its value is never read.
+src/features/decks/services/deck.service.ts(137,5): error TS6133: 'topic' is declared but its value is never read.
+src/features/decks/services/deck.service.ts(138,5): error TS6133: 'page' is declared but its value is never read.
+src/features/decks/services/deck.service.ts(139,5): error TS6133: 'limit' is declared but its value is never read.
+src/features/decks/services/deck.service.ts(140,5): error TS6133: 'refresh' is declared but its value is never read.
+src/features/review/pages/ReviewQueuePage.tsx(33,80): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+src/features/review/pages/ReviewQueuePage.tsx(50,25): error TS2345: Argument of type '(prev: number[]) => (string | number)[]' is not assignable to parameter of type 'SetStateAction<number[]>'.
+  Type '(prev: number[]) => (string | number)[]' is not assignable to type '(prevState: number[]) => number[]'.
+    Type '(string | number)[]' is not assignable to type 'number[]'.
+      Type 'string | number' is not assignable to type 'number'.
+        Type 'string' is not assignable to type 'number'.
+src/features/vocab/components/AddVocabDialog.tsx(55,5): error TS2322: Type '(userId: string, data: CreateVocabInput) => Promise<Vocab>' is not assignable to type 'MutationFunction<Vocab, string>'.
+  Types of parameters 'data' and 'context' are incompatible.
+    Type 'MutationFunctionContext' is missing the following properties from type 'CreateVocabInput': word, meaningVi
+src/features/vocab/components/AddVocabDialog.tsx(89,9): error TS18048: 'formData.tags' is possibly 'undefined'.
+src/features/vocab/components/AddVocabDialog.tsx(114,21): error TS2345: Argument of type 'CreateVocabInput' is not assignable to parameter of type 'string'.
+src/features/vocab/components/AddVocabDialog.tsx(119,17): error TS18048: 'formData.tags' is possibly 'undefined'.
+src/features/vocab/components/AddVocabDialog.tsx(129,13): error TS18048: 'formData.tags' is possibly 'undefined'.
+src/features/vocab/components/AddVocabDialog.tsx(212,16): error TS18048: 'formData.tags' is possibly 'undefined'.
+src/features/vocab/components/AddVocabDialog.tsx(214,20): error TS18048: 'formData.tags' is possibly 'undefined'.
+src/features/vocab/components/DeleteVocabDialog.tsx(26,33): error TS2554: Expected 2 arguments, but got 1.
+src/features/vocab/components/DeleteVocabDialog.tsx(35,23): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+src/features/vocab/components/EditVocabDialog.tsx(60,45): error TS2554: Expected 3 arguments, but got 2.
+src/features/vocab/components/EditVocabDialog.tsx(78,9): error TS18048: 'formData.tags' is possibly 'undefined'.
+src/features/vocab/components/EditVocabDialog.tsx(106,17): error TS18048: 'formData.tags' is possibly 'undefined'.
+src/features/vocab/components/EditVocabDialog.tsx(107,44): error TS2488: Type 'string[] | undefined' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/features/vocab/components/EditVocabDialog.tsx(116,13): error TS18048: 'formData.tags' is possibly 'undefined'.
+src/features/vocab/components/EditVocabDialog.tsx(191,16): error TS18048: 'formData.tags' is possibly 'undefined'.
+src/features/vocab/components/EditVocabDialog.tsx(193,20): error TS18048: 'formData.tags' is possibly 'undefined'.
+src/features/vocab/components/VocabCard.tsx(66,17): error TS2322: Type 'Date' is not assignable to type 'string'.
+src/features/vocab/components/VocabCard.tsx(69,38): error TS2345: Argument of type 'Date' is not assignable to parameter of type 'string'.
+src/features/vocab/components/VocabularyList.tsx(18,35): error TS2554: Expected 2 arguments, but got 1.
+src/features/vocab/components/VocabularyList.tsx(25,36): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+src/features/vocab/pages/VocabListPage.tsx(111,35): error TS2339: Property 'skip' does not exist on type 'PaginatedVocab'.
+src/features/vocab/pages/VocabListPage.tsx(111,47): error TS2339: Property 'take' does not exist on type 'PaginatedVocab'.
+src/features/vocab/pages/VocabListPage.tsx(112,57): error TS2339: Property 'take' does not exist on type 'PaginatedVocab'.
+src/features/vocab/pages/VocabListPage.tsx(113,32): error TS2339: Property 'items' does not exist on type 'PaginatedVocab'.
+src/features/vocab/pages/VocabListPage.tsx(185,59): error TS2339: Property 'items' does not exist on type 'PaginatedVocab'.
+src/features/vocab/pages/VocabListPage.tsx(192,39): error TS2339: Property 'items' does not exist on type 'PaginatedVocab'.
+src/features/vocab/services/vocab.service.ts(6,14): error TS6133: 'firestoreLimit' is declared but its value is never read.
+npm error Lifecycle script `build:tsc` failed with error:
+npm error code 2
+npm error path C:\Users\duyen\OneDrive\Desktop\projects_2025\eng-universe\apps\frontend
+npm error workspace frontend@0.0.0
+npm error location C:\Users\duyen\OneDrive\Desktop\projects_2025\eng-universe\apps\frontend
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c tsc -b

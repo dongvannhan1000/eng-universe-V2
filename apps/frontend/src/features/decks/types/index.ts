@@ -1,30 +1,22 @@
 export interface Deck {
-  id: number;
+  id: string; // Changed from number
   slug: string;
   title: string;
   description?: string | null;
   tags: string[];
-  // cefr?: string | null; // A2/B1/B2/C1/C2
   createdAt: Date;
   updatedAt: Date;
-  items: DeckItem[];
+  items?: DeckItem[]; // Made optional since items are fetched separately
 }
 
 export interface DeckItem {
-  id: number;
-  deckId: number;
+  id: string; // Changed from number
+  deckId: string; // Changed from number
   headword: string;
-  pos?: string | null;
-  definition?: string | null;
-  // example?: string | null;
-  // ipa?: string | null;
-  // collocations: string[];
+  pos?: string;
+  definition?: string;
   tags: string[];
-  source?: string | null;
-  // sourceAttribution?: string | null;
-  // sourceUrl?: string | null;
-  // license?: string | null;
-  // lang: string;
+  source?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,8 +28,8 @@ export interface DeckListParams {
 }
 
 export interface PaginatedDeckItem {
+  data: DeckItem[]; // Changed from items
   total: number;
   page: number;
   limit: number;
-  items: DeckItem[];
 }
